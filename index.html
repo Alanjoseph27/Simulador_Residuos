@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>UAM - Estación de Reciclaje</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="pantalla-sistema">
+        <div id="texto-sistema"></div>
+    </div>
+
+    <div id="escena-principal">
+        <div id="escenario-virtual">
+            <div class="fondo-metro"></div>
+            <div class="machine">
+                <div class="top-panel"></div>
+                <div class="middle-black-row">
+                    <div class="screen">
+                        <div id="texto-led">CARGANDO...</div>
+                        <button id="btn-listo" onclick="finalizarSesion()">LISTO</button>
+                    </div>
+                    <div class="waste-frame">
+                        <div class="waste-circle-green" id="zona-deposito"></div>
+                    </div>
+                </div>
+                <div class="main-gray-panel">
+                    <div class="card-reader-base" id="lector-tarjeta">
+                        <div class="inner-gray-circle">
+                            <img src="img/tarjeta.svg" alt="Sensor Tarjeta" style="width: 60%; height: 60%; opacity: 0.7;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="contenedor-manos" id="brazos">
+            <div class="mano"><div id="objeto-sostenido"></div></div>
+        </div>
+
+<div class="ui-inferior" id="ui-controles">
+   <div id="btn-tarjeta-uam" class="slot-tarjeta" onclick="agarrar('TARJETA', 'transparent', -1)">
+        <img src="img/tarjeta.svg" alt="Tarjeta">
+    </div>
+    
+    <div id="hotbar-inventario">
+        <div class="item-slot" onclick="agarrar('PET', 'transparent', 0)">
+            <img src="img/b_plastico.svg" width="40">
+        </div>
+        <div class="item-slot" onclick="agarrar('VIDRIO', 'transparent', 1)">
+            <img src="img/b_vidrio.svg" width="40">
+        </div>
+        <div class="item-slot" onclick="agarrar('LATA', 'transparent', 2)">
+            <img src="img/lata.svg" width="40">
+        </div>
+        <div class="item-slot" onclick="agarrar('MANZANA', 'transparent', 3)">
+            <img src="img/manzana.svg" width="40">
+        </div>
+        <div class="item-slot" onclick="agarrar('UNICEL', 'transparent', 4)">
+            <img src="img/v_unicel.svg" width="40">
+        </div>
+    </div>
+</div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
