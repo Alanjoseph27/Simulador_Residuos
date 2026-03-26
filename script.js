@@ -14,10 +14,64 @@ const slots = document.querySelectorAll('.item-slot');
 const pantallaSistema = document.getElementById('pantalla-sistema');
 const textoPantallaSistema = document.getElementById('texto-sistema');
 
-let zoom = 0.745;
+// Detectar si estamos en móvil para ajustar el zoom
+const esMovil = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+let zoom = 0.745; // Si es móvil, empezamos con menos zoom
 let currentIndex = -1;
 let tarjetaEscaneada = false; 
-let lista = []; //lista de objetos
+let lista = []; 
+
+window.addEventListener('load', () => {
+    if (esMovil) {
+        // 1. Forzamos la clase primero
+        brazos.classList.add('brazos-derecha-movil');
+        
+        // 2. IMPORTANTE: Forzamos un zoom inicial bajo para que se note el cambio
+        updateZoom(0.745); 
+
+        // 3. Esperamos a que el navegador "respire" y ejecutamos la animación
+        setTimeout(() => {
+            console.log("Ejecutando caminata...");
+            // En lugar de llamar a moverMovil, vamos a disparar las clases manualmente 
+            // para asegurar que no haya errores de funciones no definidas
+            brazos.classList.add('caminando');
+            updateZoom(0.745); // Zoom de acercamiento
+            
+            // Quitamos el tambaleo después de que termine de "caminar"
+            setTimeout(() => {
+                brazos.classList.remove('caminando');
+            }, 1500);
+        }, 1000); // 1 segundo después de cargar
+    }
+});
+
+// Aplicamos el zoom inicial
+function updateZoom(nuevoZoom) {
+    zoom = nuevoZoom;
+    document.documentElement.style.setProperty('--zoom-actual', zoom);
+    if (escenario) escenario.style.transform = `scale(${zoom})`;
+}
+
+// --- 1. PRIMERO DEFINIMOS LA FUNCIÓN PARA QUE EL NAVEGADOR LA CONOZCA ---
+function moverMovil(acercar) {
+    if (!esMovil) return;
+    
+    if (acercar) {
+        brazos.classList.add('caminando');
+        updateZoom(0.745); 
+        setTimeout(() => {
+            brazos.classList.remove('caminando');
+        }, 1200); // Un poco más de tiempo para que se note el tambaleo
+    } else {
+        brazos.classList.add('caminando');
+        updateZoom(0.745);
+        setTimeout(() => {
+            brazos.classList.remove('caminando');
+        }, 1200);
+    }
+}
+
+
 
 //Puntos residuos
 const puntosResiduos = { 
@@ -45,24 +99,133 @@ window.onload = () => {
 };
 
 // 1. MOVIMIENTO
+// --- FUNCIÓN MAESTRA DE MOVIMIENTO MOVIL ---
+function ejecutarCaminata(direccion) {
+    if (tarjetaEscaneada) return;
+
+    if (direccion === 'arriba') zoom += 0.015;
+    if (direccion === 'abajo') zoom -= 0.015;
+
+    // Límites diferenciados
+    if (esMovil) {
+        zoom = Math.max(0.745, Math.min(1.185, zoom));
+    } else {
+        zoom = Math.max(0.745, Math.min(1.8, zoom));
+    }
+
+    document.documentElement.style.setProperty('--zoom-actual', zoom);
+    escenario.style.transform = `scale(${zoom})`;
+    brazos.classList.add('caminando');
+    escenario.classList.add('camara-caminando');
+
+    // Lógica de UI y Botones Flotantes
+    let umbralUI = esMovil ? 1.185 : 1.3;
+    const panelFlechas = document.getElementById('controles-movil-flotantes');
+
+    if (zoom >= umbralUI) {
+        uiControles.classList.add('ui-visible');
+        uiControles.style.pointerEvents = 'auto';
+        uiControles.style.opacity = '1';
+        
+        if (esMovil && panelFlechas) {
+            panelFlechas.style.opacity = '0';
+            panelFlechas.style.visibility = 'hidden';
+        }
+        if (!tarjetaEscaneada) ledTexto.innerText = "INSERTE TARJETA";
+    } else {
+        uiControles.classList.remove('ui-visible');
+        uiControles.style.pointerEvents = 'none';
+        if (esMovil && panelFlechas) {
+            panelFlechas.style.opacity = '1';
+            panelFlechas.style.visibility = 'visible';
+        }
+    }
+}
+
+// 1. MOVIMIENTO
 window.addEventListener('keydown', (e) => {
     if (pantallaSistema.classList.contains('pantalla-activa')) return;
+
+    // Si la tarjeta ya se escaneó, NO permitimos mover las flechas
+    if (tarjetaEscaneada) {
+        // Solo permitimos el golpe si presiona Espacio
+        if (e.code === 'Space') {
+            dispararGolpe();
+        }
+        return; // Detiene el resto de la función (flechas)
+    }
 
     if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
         if (e.key === 'ArrowUp') zoom += 0.015;
         if (e.key === 'ArrowDown') zoom -= 0.015;
-        zoom = Math.max(0.745, Math.min(1.8, zoom));
+
+        // --- CONDICIONAL ESPECIAL PARA MÓVIL ---
+        if (esMovil) {
+            // En móvil el límite es 1.185
+            zoom = Math.max(0.745, Math.min(1.185, zoom));
+        } else {
+            // En web normal el límite sigue siendo 1.8
+            zoom = Math.max(0.745, Math.min(1.8, zoom));
+        }
+
         document.documentElement.style.setProperty('--zoom-actual', zoom);
         escenario.style.transform = `scale(${zoom})`;
         brazos.classList.add('caminando');
         escenario.classList.add('camara-caminando');
 
-        if (zoom >= 1.3) {
+        // --- LÓGICA DE DESBLOQUEO ---
+        // Definimos el umbral de activación dependiendo del dispositivo
+        let umbralActivacion = esMovil ? 1.185 : 1.3;
+
+        if (zoom >= umbralActivacion) {
             uiControles.classList.add('ui-visible');
+            // Desbloqueamos visualmente los controles (opacidad y clics)
+            uiControles.style.pointerEvents = 'auto';
+            uiControles.style.opacity = '1';
+            
+            // Mostramos el inventario solo si ya se escaneó (aunque aquí arriba ya bloqueamos el movimiento post-escaneo)
             hotbar.style.display = tarjetaEscaneada ? 'flex' : 'none';
+            
+            if (!tarjetaEscaneada) {
+                ledTexto.innerText = "INSERTE TARJETA";
+            }
         } else {
             uiControles.classList.remove('ui-visible');
+            // Si se aleja, bloqueamos clics (opcional, según prefieras)
+            uiControles.style.pointerEvents = 'none';
         }
+    }
+});
+
+// 2. EVENTOS TÁCTILES (MÓVIL)
+// Agrega esto justo debajo del keydown
+if (esMovil) {
+    const btnSubir = document.getElementById('btn-subir');
+    const btnBajar = document.getElementById('btn-bajar');
+
+    btnSubir.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        // Usamos un intervalo para que camine mientras dejas presionado
+        window.intervaloCaminar = setInterval(() => ejecutarCaminata('arriba'), 50);
+    });
+
+    btnBajar.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        window.intervaloCaminar = setInterval(() => ejecutarCaminata('abajo'), 50);
+    });
+
+    window.addEventListener('touchend', () => {
+        clearInterval(window.intervaloCaminar);
+        brazos.classList.remove('caminando');
+        escenario.classList.remove('camara-caminando');
+    });
+}
+
+// Limpiar caminata con teclado
+window.addEventListener('keyup', (e) => {
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+        brazos.classList.remove('caminando');
+        escenario.classList.remove('camara-caminando');
     }
 });
 
@@ -175,6 +338,8 @@ lectorTarjeta.addEventListener('click', () => {
         }, 1500); 
     }
 });
+
+
 
 zonaDeposito.addEventListener('click', () => {
     const tipoEnMano = objetoEnMano.dataset.tipo;

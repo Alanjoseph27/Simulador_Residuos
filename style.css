@@ -353,3 +353,121 @@ contenedor-manos { position: absolute; bottom: -80px; right: 5%; width: 200px; h
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* Ocultos por defecto */
+#controles-movil-flotantes {
+    display: none;
+}
+
+/* --- AJUSTES PARA CELULAR --- */
+@media (max-width: 768px) {
+    :root {
+        /* Bajamos el zoom para que la máquina quepa en la pantalla del cel */
+        --zoom-actual: 0.745; 
+    }
+
+    #controles-movil-flotantes {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        left: 20px;
+        top: 75%;
+        transform: translateY(-50%);
+        gap: 20px;
+        z-index: 1000;
+        transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+
+    .btn-movil {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        border: 2px solid white;
+        color: white;
+        font-size: 24px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        backdrop-filter: blur(5px);
+        -webkit-tap-highlight-color: transparent; /* Evita el cuadro azul al tocar */
+    }
+
+    .btn-movil:active {
+        background: rgba(255, 255, 255, 0.5);
+        transform: scale(0.9);
+    }
+
+    /* Quitamos el transform del ID principal para que no pelee con la clase */
+    #escenario-virtual {
+        transition: transform 1.2s cubic-bezier(0.25, 0.1, 0.25, 1) !important;
+    }
+
+    .brazos-derecha-movil {
+        position: fixed !important;
+        right: 0 !important;
+        left: auto !important;
+        bottom: -20px !important;
+        /* QUITAMOS el !important de aquí para que la animación pueda entrar */
+        transform: translateX(20%) translateY(20px) scale(0.8); 
+        display: block !important;
+        transition: transform 0.3s ease;
+    }
+
+    @keyframes steps-movil {
+        0%, 100% { 
+            /* Repetimos la posición base exacta */
+            transform: translateX(20%) translateY(20px) scale(0.8); 
+        }
+        50% { 
+            /* Solo cambiamos el translateY para el efecto de paso */
+            transform: translateX(20%) translateY(0px) scale(0.8); 
+        }
+    }
+
+    .brazos-derecha-movil.caminando {
+        /* Aquí SÍ usamos !important para que la animación gane la prioridad */
+      animation: steps-movil 0.6s infinite ease-in-out !important;
+    }
+
+    /* Ajustamos la barra de objetos para que no se amontone */
+    .ui-inferior {
+        width: 95%;
+        bottom: 10px;
+        display: flex;
+        flex-direction: column; /* Ponemos la tarjeta arriba y el inventario abajo */
+        align-items: center;
+        gap: 10px;
+    }
+
+    #hotbar-inventario {
+        flex-wrap: wrap; /* Si no caben, que se pongan en dos filas */
+        justify-content: center;
+        padding: 5px;
+    }
+
+    .item-slot {
+        width: 50px;
+        height: 50px;
+    }
+
+    /* Ajuste para que la mano no tape toda la pantalla en móvil */
+    .contenedor-manos {
+        transform: scale(0.8);
+        width: 116px;
+        height: 350px;
+    }
+
+    .mano {
+    position: absolute;
+    bottom: -180px; /* Lo bajamos más para esconder el excedente */
+    width: 190px; 
+    height: 500px; /* Antes 350px, ahora más largo para que no se corte al subir */
+    background: var(--piel);
+    border-radius: 80px 80px 0 0;
+    transform: rotate(-10deg);
+    transform-origin: bottom center; /* Asegura que rote desde la base */
+}
+
+
+}
+
