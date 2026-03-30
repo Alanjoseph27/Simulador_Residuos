@@ -12,8 +12,7 @@ body, html {
     margin: 0; padding: 0;
     height: 100%; width: 100%;
     overflow: hidden;
-    background: #000;
-    font-family: sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 #escenario-virtual {
@@ -21,16 +20,21 @@ body, html {
     display: flex; justify-content: center; align-items: center;
     transition: opacity 1.2s ease, filter 1.2s ease, transform 0.1s linear;
     transform: scale(var(--zoom-actual));
+    /* CAMBIO AQUÍ: Bajamos el origen para que la cámara "suba" */
+    /* center 35% significa que el punto fijo está arriba, en la pantalla LED */
+    transform-origin: center 15%;
 }
 
 /* --- PANTALLA COMPLETA CON ANIMACIÓN SUAVE --- */
 #pantalla-sistema {
     position: fixed;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%) scale(0.5); 
-    width: 90vw; height: 85vh;
-    background-color: var(--screen-cyan);
-    border: 10px solid #333;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.5);
+    width: 90vw;
+    height: 85vh;
+    /* background-color: white; */
+    /* border: 3px solid #cfcfcf; */
     border-radius: 15px;
     z-index: 100;
     display: none;
@@ -43,6 +47,9 @@ body, html {
     color: #333;
 }
 
+#pantallaLED{
+    background-color: white;
+}
 .pantalla-activa {
     display: flex !important;
     opacity: 1 !important;
@@ -56,7 +63,7 @@ body, html {
 
 .fondo-metro {
     position: absolute;
-    width: 150%; height: 300%;
+    width: 161%; height: 164%;
     background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('img/fondometro.png'); 
     background-size: cover;
     background-position: center;
@@ -65,38 +72,74 @@ body, html {
 }
 
 /* --- ANIMACIONES DE PARPADEO SÓLIDO (Sin brillos) --- */
-.parpadear-espera {
-    animation: pulso-verde 1s infinite;
+/* Animación de parpadeo para los trazos del SVG */
+.st0{fill:#103523;}
+.st1{fill:#859356;}
+.st2{fill:#EAE7C6;}
+.st3{fill:#E9E6C6;}
+.st4{fill:#ffffff;}
+.st5{fill:#08323A;}
+.st6{fill:#135764;}
+.st7{fill:#142124;}
+.st8{fill:#383d3e;}
+
+.maquina-svg-inline {
+    width: 98%;
+    height: 70%;
+    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
 }
 
-@keyframes pulso-verde {
-    0%, 100% { border-color: var(--neon-green); }
-    50% { border-color: #1a3a24; }
+
+@keyframes pulso-lector {
+    0%, 100% { 
+        fill: #ffeb3b; /* Color amarillo */
+        filter: drop-shadow(0 0 5px #ffeb3b); /* Un pequeño brillo extra */
+    }
+    50% { 
+        fill: #383d3e; /* Color original oscuro */
+        filter: none;
+    }
 }
 
-.parpadear-exito {
-    animation: pulso-amarillo 0.2s infinite;
+/* 1. Animación de ESPERA (Amarillo) */
+@keyframes pulso-lector-amarillo {
+    0%, 100% { 
+        fill: #ffeb3b; 
+        filter: drop-shadow(0 0 8px #ffeb3b);
+    }
+    50% { 
+        fill: #383d3e; 
+        filter: none;
+    }
 }
 
-@keyframes pulso-amarillo {
-    0%, 100% { border-color: #ffeb3b; }
-    50% { border-color: #665d17; }
+/* 2. Animación de ÉXITO (Verde) - Solo parpadea 3 veces y se detiene */
+@keyframes pulso-verde-exito {
+    0%, 100% { fill: #383d3e; }
+    50% { fill: #4ade80; filter: drop-shadow(0 0 10px #4ade80); }
 }
 
 .parpadear-lector-espera {
-    animation: pulso-lector 1s infinite;
+    animation: pulso-lector-amarillo 1s infinite !important;
 }
 
-@keyframes pulso-lector {
-    0%, 100% { color: #ffeb3b; border-color: #ffeb3b; }
-    50% { color: #444; border-color: #444; }
+.lector-exito-anim {
+    animation: pulso-verde-exito 0.4s ease-in-out 3 !important;
 }
 
 /* --- ESTRUCTURA MÁQUINA --- */
 .machine {
-    width: 380px; height: 600px;
-    background-color: var(--bg-black);
-    display: flex; flex-direction: column;
+    width: 1000px;
+    height: 1000px;
+    position: relative; /* Clave para que el position:absolute del botón funcione */
+}
+
+#maquinag {
+    width: 600px;
+    height: 600px;
+    position: absolute;
+    top: 137px;
+    left: 450px;
 }
 
 .top-panel {
@@ -112,21 +155,82 @@ body, html {
     padding: 20px 10px;
 }
 
-.screen {
-    width: 180px; height: 110px;
-    background-color: var(--screen-cyan);
-    border: 2px solid #fff;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    font-size: 14px; color: #333; font-weight: bold; text-align: center;
+
+#led-screen-container {
+    width: 100%; height: 100%;
+    display: flex; justify-content: center; align-items: center;
+    padding: 5px; box-sizing: border-box;
+}
+
+#texto-led {
+    color: #103523;
+    font-weight: 600; /* Plus Jakarta Sans */
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 11px; /* Ajuste para el texto más largo */
+    line-height: 2.2;
+    text-align: center;
+    text-transform: uppercase;
+    
+    /* Animación de desvanecimiento suave (fade) */
+    transition: opacity 0.2s ease-in-out; 
+
+}
+
+@keyframes led-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+.calcomania-sensor {
+    position: absolute;
+    top: 24.3%;
+    left: 56.9%;
+    width: 33px;
+    height: auto;
+    opacity: 1;
+    pointer-events: none;
+    z-index: 5;
+    /* filter: grayscale(0.2) contrast(0.9);*/
+}
+
+.logo-maquina-top {
+    position: absolute;
+    /* POSICIONAMIENTO PRECISO: 
+       Arriba de la pantalla LED y centrado */
+    top: 5.8%; /* Un poco por debajo del borde superior de la máquina */
+    left: 50%; /* Centrado horizontalmente */
+    transform: translateX(-50%); /* Ajuste perfecto para el centro */
+    
+    /* TAMAÑO: Que resalte sin tapar nada */
+    width: 117px; 
+    height: auto;
+    
+    opacity: 0.9; /* Ligeramente transparente para que parezca impreso en el plástico */
+    z-index: 5; /* Por encima de la máquina, por debajo de la mano */
+    pointer-events: none; /* El clic pasa a través */
 }
 
 #btn-listo {
     display: none;
-    margin-top: 10px; padding: 5px 15px;
-    background: #333; color: var(--neon-green);
+    position: absolute;
+    top: 185px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 4px 20px;
+    background: #08323A;
+    color: var(--neon-green);
     border: 2px solid var(--neon-green);
+    border-radius: 18px;
+    font-weight: bold;
+    font-size: 7px;
     cursor: pointer;
+    z-index: 50;
+    transition: all 0.3s ease;
+}
+
+#btn-listo:hover {
+    background: var(--neon-green);
+    color: black;
 }
 
 .waste-frame {
@@ -292,6 +396,7 @@ contenedor-manos { position: absolute; bottom: -80px; right: 5%; width: 200px; h
     pointer-events: none;
 }
 
+
 .camara-caminando { animation: head-bob 1s infinite ease-in-out; }
 @keyframes head-bob {
     0%, 100% { transform: scale(var(--zoom-actual)) translateY(0); }
@@ -353,17 +458,65 @@ contenedor-manos { position: absolute; bottom: -80px; right: 5%; width: 200px; h
     to { opacity: 1; transform: translateY(0); }
 }
 
+.btn-premio-bloqueado {
+    background: #e0e0e0;
+    color: #a0a0a0;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.btn-premio-activo {
+    background: #08323a;
+    color: #4ade80;
+    cursor: pointer;
+    border: 2px solid #4ade80 !important;
+    transition: all 0.3s ease;
+}
+
+.btn-premio-activo:hover {
+    background: #4ade80;
+    color: #08323a;
+}
+
+
 /* Ocultos por defecto */
 #controles-movil-flotantes {
     display: none;
 }
 
+
 /* --- AJUSTES PARA CELULAR --- */
 @media (max-width: 768px) {
     :root {
         /* Bajamos el zoom para que la máquina quepa en la pantalla del cel */
-        --zoom-actual: 0.745; 
+        --zoom-actual: 1.8; 
     }
+    
+    #btn-listo{
+    display: none;
+    position: absolute;
+    top: 170px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 3px 6px;
+    background: #08323A;
+    color: var(--neon-green);
+    border: 2px solid var(--neon-green);
+    border-radius: 17px;
+    font-weight: bold;
+    font-size: 5px;
+    cursor: pointer;
+    z-index: 50;
+    transition: all 0.3s ease;
+}
+
+   .maquina-svg-inline {
+    width: 97%;
+    height: 52%;
+    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+    }
+
+   
 
     #controles-movil-flotantes {
         display: flex;
@@ -399,8 +552,14 @@ contenedor-manos { position: absolute; bottom: -80px; right: 5%; width: 200px; h
 
     /* Quitamos el transform del ID principal para que no pelee con la clase */
     #escenario-virtual {
-        transition: transform 1.2s cubic-bezier(0.25, 0.1, 0.25, 1) !important;
-    }
+    width: 100%; height: 100%;
+    display: flex; justify-content: center; align-items: center;
+    transition: opacity 1.2s ease, filter 1.2s ease, transform 0.1s linear;
+    transform: scale(var(--zoom-actual));
+    /* CAMBIO AQUÍ: Bajamos el origen para que la cámara "suba" */
+    /* center 35% significa que el punto fijo está arriba, en la pantalla LED */
+    transform-origin: center 15%;
+}
 
     .brazos-derecha-movil {
         position: fixed !important;
@@ -468,6 +627,32 @@ contenedor-manos { position: absolute; bottom: -80px; right: 5%; width: 200px; h
     transform-origin: bottom center; /* Asegura que rote desde la base */
 }
 
+    .calcomania-sensor{
+    position: absolute;
+    top: 20.1%;
+    left: 59.2%;
+    width: 20px;
+    height: auto;
+    opacity: 1;
+    pointer-events: none;
+    z-index: 5;
+    /* filter: grayscale(0.2) contrast(0.9); */
+    }
+
+    .logo-maquina-top {
+    position: absolute;
+    /* POSICIONAMIENTO PRECISO: 
+       Arriba de la pantalla LED y centrado */
+    top: 10.3%; /* Un poco por debajo del borde superior de la máquina */
+    left: 50%; /* Centrado horizontalmente */
+    transform: translateX(-50%); /* Ajuste perfecto para el centro */
+    /* TAMAÑO: Que resalte sin tapar nada */
+    width: 70px; 
+    height: auto;
+    opacity: 0.9; /* Ligeramente transparente para que parezca impreso en el plástico */
+    z-index: 5; /* Por encima de la máquina, por debajo de la mano */
+    pointer-events: none; /* El clic pasa a través */
+}
 
 }
 
