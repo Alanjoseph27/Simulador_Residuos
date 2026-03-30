@@ -180,7 +180,7 @@ body, html {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.8; }
 }
-
+/*
 .calcomania-sensor {
     position: absolute;
     top: 24.3%;
@@ -190,31 +190,28 @@ body, html {
     opacity: 1;
     pointer-events: none;
     z-index: 5;
-    /* filter: grayscale(0.2) contrast(0.9);*/
-}
-
+    
+}*/
+/*
 .logo-maquina-top {
     position: absolute;
-    /* POSICIONAMIENTO PRECISO: 
-       Arriba de la pantalla LED y centrado */
-    top: 5.8%; /* Un poco por debajo del borde superior de la máquina */
-    left: 50%; /* Centrado horizontalmente */
-    transform: translateX(-50%); /* Ajuste perfecto para el centro */
+    top: 5.8%; 
+    left: 50%; 
+    transform: translateX(-50%);
     
-    /* TAMAÑO: Que resalte sin tapar nada */
+    
     width: 117px; 
     height: auto;
     
-    opacity: 0.9; /* Ligeramente transparente para que parezca impreso en el plástico */
-    z-index: 5; /* Por encima de la máquina, por debajo de la mano */
-    pointer-events: none; /* El clic pasa a través */
-}
+    
+    z-index: 5;
+    pointer-events: none; 
+}*/
 
 #btn-listo {
     display: none;
-    position: absolute;
-    top: 185px;
-    left: 50%;
+    width: 100px;
+    height: 30px;
     transform: translateX(-50%);
     padding: 4px 20px;
     background: #08323A;
@@ -494,9 +491,6 @@ contenedor-manos { position: absolute; bottom: -80px; right: 5%; width: 200px; h
     
     #btn-listo{
     display: none;
-    position: absolute;
-    top: 170px;
-    left: 50%;
     transform: translateX(-50%);
     padding: 3px 6px;
     background: #08323A;
@@ -504,7 +498,7 @@ contenedor-manos { position: absolute; bottom: -80px; right: 5%; width: 200px; h
     border: 2px solid var(--neon-green);
     border-radius: 17px;
     font-weight: bold;
-    font-size: 5px;
+    font-size: 10px;
     cursor: pointer;
     z-index: 50;
     transition: all 0.3s ease;
