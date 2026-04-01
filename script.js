@@ -105,7 +105,7 @@ const puntosResiduos = {
     'VIDRIO': 15, 
     'LATA': 10, 
     'MANZANA': 5, 
-    'UNICEL': 8,
+    'CARTON': 8,
     'TARJETA': 0 
 };
 
@@ -115,7 +115,7 @@ const rutasSVG = {
     'VIDRIO':'img/b_vidrio.svg',
     'LATA': 'img/lata.svg',
     'MANZANA': 'img/manzana.svg',
-    'UNICEL': 'img/v_unicel.svg',
+    'CARTON': 'img/v_unicel.svg',
     'TARJETA': 'img/tarjeta.svg'
 };
 
@@ -298,7 +298,7 @@ window.addEventListener('wheel', (e) => {
     if (zoom < 1.3 || !tarjetaEscaneada || pantallaSistema.classList.contains('pantalla-activa')) return;
 
     // 2. CORRECCIÓN DE NOMBRES: 'UNICEL' debe coincidir con la clave en rutasSVG
-    const tipos = ['PET', 'VIDRIO', 'LATA', 'MANZANA', 'UNICEL']; 
+    const tipos = ['PET', 'VIDRIO', 'LATA', 'MANZANA', 'CARTON']; 
     const colores = ['transparent', 'transparent', 'transparent', 'transparent', 'transparent'];
 
     // 3. Lógica de dirección del scroll

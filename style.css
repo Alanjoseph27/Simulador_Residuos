@@ -210,13 +210,12 @@ body, html {
 
 #btn-listo {
     display: none;
-    width: 100px;
-    height: 30px;
+    width: 70px;
+    height: 24px;
     transform: translateX(-50%);
     padding: 4px 20px;
-    background: #08323A;
-    color: var(--neon-green);
-    border: 2px solid var(--neon-green);
+    background: #27ae60; color: white;
+    border: 2px;
     border-radius: 18px;
     font-weight: bold;
     font-size: 7px;
@@ -493,9 +492,7 @@ contenedor-manos { position: absolute; bottom: -80px; right: 5%; width: 200px; h
     display: none;
     transform: translateX(-50%);
     padding: 3px 6px;
-    background: #08323A;
-    color: var(--neon-green);
-    border: 2px solid var(--neon-green);
+    background: #27ae60; color: white;
     border-radius: 17px;
     font-weight: bold;
     font-size: 10px;
