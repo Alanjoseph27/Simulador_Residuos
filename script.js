@@ -15,6 +15,26 @@ const pantallaSistema = document.getElementById('pantalla-sistema');
 const textoPantallaSistema = document.getElementById('texto-sistema'); 
 // Detectar si estamos en móvil para ajustar el zoom
 const esMovil = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+const contenedorGuia = document.getElementById('guia-asistencia');
+const overlayGuia = document.getElementById('overlay-guia');
+const textoGuia = document.getElementById('texto-guia');
+
+const audioAcercate = new Audio('sonidos/acercate.mp3');
+const audioDeposita = new Audio('sonidos/deposita.mp3');
+const audioRecompensas = new Audio('sonidos/recompensas.mp3');
+const audioProcesando = new Audio('sonidos/procesando.mp3');
+const audioGenerando = new Audio('sonidos/generando.mp3');
+audioGenerando.volume = 0.6;
+const audiosResiduos = {
+    'PET': new Audio('sonidos/pet.mp3'),
+    'VIDRIO': new Audio('sonidos/vidrio.mp3'),
+    'ALUMINIO': new Audio('sonidos/aluminio.mp3'),
+    'PLÁSTICO': new Audio('sonidos/plastico.mp3'),
+    'CARTÓN': new Audio('sonidos/carton.mp3') // Asegúrate que el archivo tenga el acento igual
+};
+
+let sonidoActivado = false;
+let usuarioYaSeMovio = false;
 let zoom = 0.745; // Si es móvil, empezamos con menos zoom
 let currentIndex = -1;
 let tarjetaEscaneada = false; 
@@ -27,7 +47,7 @@ window.addEventListener('load', () => {
         brazos.classList.add('brazos-derecha-movil');
         
         // 2. IMPORTANTE: Forzamos un zoom inicial bajo para que se note el cambio
-        updateZoom(1.8); 
+        updateZoom(2.4); 
 
         // 3. Esperamos a que el navegador "respire" y ejecutamos la animación
         setTimeout(() => {
@@ -35,13 +55,22 @@ window.addEventListener('load', () => {
             // En lugar de llamar a moverMovil, vamos a disparar las clases manualmente 
             // para asegurar que no haya errores de funciones no definidas
             //brazos.classList.add('caminando');
-            updateZoom(1.8); // Zoom de acercamiento
+            updateZoom(2.4); // Zoom de acercamiento
             
             // Quitamos el tambaleo después de que termine de "caminar"
             setTimeout(() => {
                 brazos.classList.remove('caminando');
             }, 1500);
         }, 100); // 1 segundo después de cargar
+    }
+
+    let umbralUI = esMovil ? 2.4 : 1.3;
+    if (zoom >= umbralUI) {
+        if (!tarjetaEscaneada) {
+            actualizarGuia("Acércate a la Máquina con las flechas y escanea la tarjeta en el sensor");
+        }
+    } else {
+        actualizarGuia("Acércate a la Máquina con las flechas y escanea la tarjeta en el sensor");
     }
 
     // --- CICLO DE MENSAJES DE BIENVENIDA ---
@@ -84,20 +113,40 @@ function moverMovil(acercar) {
     
     if (acercar) {
         brazos.classList.add('caminando');
-        updateZoom(1.8); 
+        updateZoom(2.4); 
         setTimeout(() => {
             brazos.classList.remove('caminando');
         }, 1200); // Un poco más de tiempo para que se note el tambaleo
     } else {
         brazos.classList.add('caminando');
-        updateZoom(1.8);
+        updateZoom(2.4);
         setTimeout(() => {
             brazos.classList.remove('caminando');
         }, 1200);
     }
 }
 
+// Función para cambiar el mensaje con un pequeño desvanecimiento
+function actualizarGuia(nuevoMensaje) {
+    if (!nuevoMensaje || nuevoMensaje === "") {
+        contenedorGuia.classList.remove('visible');
+        overlayGuia.classList.remove('overlay-activo');
+        // Usamos un tiempo más corto para limpiar el texto
+        setTimeout(() => { textoGuia.innerHTML = ""; }, 400);
+        return;
+    }
 
+    // Quitamos la visibilidad del mensaje anterior rápidamente
+    contenedorGuia.classList.remove('visible');
+    
+    setTimeout(() => {
+        textoGuia.innerHTML = nuevoMensaje;
+        overlayGuia.classList.add('overlay-activo');
+        
+        // Activamos el nuevo mensaje
+        contenedorGuia.classList.add('visible');
+    }, 200); // Reducimos a 200ms para que sea casi instantáneo
+}
 
 //Puntos residuos
 const puntosResiduos = { 
@@ -130,12 +179,18 @@ window.onload = () => {
 function ejecutarCaminata(direccion) {
     if (tarjetaEscaneada) return;
 
+    //Detectar el primer movimiento ---
+    if (!usuarioYaSeMovio) {
+        usuarioYaSeMovio = true;
+        
+        actualizarGuia(""); // Ocultamos el mensaje "Acércate" de inmediato
+    }
     if (direccion === 'arriba') zoom += 0.015;
     if (direccion === 'abajo') zoom -= 0.015;
 
     // Límites diferenciados
     if (esMovil) {
-        zoom = Math.max(1.8, Math.min(3, zoom));
+        zoom = Math.max(2.4, Math.min(3, zoom));
     } else {
         zoom = Math.max(1.8, Math.min(1.8, zoom));
     }
@@ -146,7 +201,7 @@ function ejecutarCaminata(direccion) {
     escenario.classList.add('camara-caminando');
 
     // Lógica de UI y Botones Flotantes
-    let umbralUI = esMovil ? 3 : 1.3;
+    let umbralUI = esMovil ? 2.8: 1.3;
     const panelFlechas = document.getElementById('controles-movil-flotantes');
 
     if (zoom >= umbralUI) {
@@ -158,7 +213,7 @@ function ejecutarCaminata(direccion) {
             panelFlechas.style.opacity = '0';
             panelFlechas.style.visibility = 'hidden';
         }
-        if (!tarjetaEscaneada);
+        
     } else {
         uiControles.classList.remove('ui-visible');
         uiControles.style.pointerEvents = 'none';
@@ -183,13 +238,18 @@ window.addEventListener('keydown', (e) => {
     }
 
     if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+
+        if (!usuarioYaSeMovio) {
+            usuarioYaSeMovio = true;
+            actualizarGuia(""); 
+        }
         if (e.key === 'ArrowUp') zoom += 0.015;
         if (e.key === 'ArrowDown') zoom -= 0.015;
 
         // --- CONDICIONAL ESPECIAL PARA MÓVIL ---
         if (esMovil) {
             // En móvil el límite es 1.185
-            zoom = Math.max(1.8, Math.min(3, zoom));
+            zoom = Math.max(2.4, Math.min(3, zoom));
         } else {
             // En web normal el límite sigue siendo 1.8
             zoom = Math.max(0.745, Math.min(1.8, zoom));
@@ -202,7 +262,7 @@ window.addEventListener('keydown', (e) => {
 
         // --- LÓGICA DE DESBLOQUEO ---
         // Definimos el umbral de activación dependiendo del dispositivo
-        let umbralActivacion = esMovil ? 1.8 : 1.3;
+        let umbralActivacion = esMovil ? 2.4 : 1.3;
 
         if (zoom >= umbralActivacion) {
             uiControles.classList.add('ui-visible');
@@ -230,12 +290,15 @@ if (esMovil) {
 
     btnSubir.addEventListener('touchstart', (e) => {
         e.preventDefault();
+        
         // Usamos un intervalo para que camine mientras dejas presionado
         window.intervaloCaminar = setInterval(() => ejecutarCaminata('arriba'), 50);
+        
     });
 
     btnBajar.addEventListener('touchstart', (e) => {
         e.preventDefault();
+
         window.intervaloCaminar = setInterval(() => ejecutarCaminata('abajo'), 50);
     });
 
@@ -374,6 +437,14 @@ lectorTarjeta.addEventListener('click', () => {
             zonaDeposito.classList.add('parpadear-espera');
             ledTexto.innerHTML = `-GRACIAS USUARIO-<br>INGRESE SUS RESIDUOS <br><br>PUNTOS: ${saldoHistorico} PTS`;
            // setTimeout(() => ledTexto.innerHTML = "GRACIAS USUARIO <br> INGRESE SUS RESIDUOS", 500);
+           actualizarGuia("Selecciona tus residuos y deposítalos en el orificio");
+            // --- AQUÍ HACEMOS QUE SUENE ---
+            actualizarGuia("Selecciona tus residuos y deposítalos en el orificio");
+            audioDeposita.play().catch(e => console.log("Error al reproducir audio de depósito"));
+           setTimeout(() => {
+                actualizarGuia(""); // Se borra el mensaje
+            }, 3500);
+
         }, 1000); 
     }
 });
@@ -421,6 +492,9 @@ zonaDeposito.addEventListener('click', () => {
             ledTexto.innerText = "PROCESANDO...";
             ledTexto.style.opacity = '1'; // FADE IN de "Procesando"
 
+            // Suena: "Procesando..."
+           // audioProcesando.play().catch(e => console.log("Error audio procesando"));
+
             // 3. Esperamos un momento procesando y luego FADE OUT otra vez
             setTimeout(() => {
                 ledTexto.style.opacity = '0';
@@ -428,6 +502,10 @@ zonaDeposito.addEventListener('click', () => {
                 setTimeout(() => {
                     
                     //const puntos = puntosResiduos[tipoEnMano] || 0;
+
+                    if (audiosResiduos[tipoEnMano]) {
+                         audiosResiduos[tipoEnMano].play().catch(e => console.log("Error audio residuo"));
+                    }
                     
                    // MENSAJE ACUMULADO DINÁMICO
                     ledTexto.innerHTML = `PUNTOS: ${saldoAntes} PTS<br>${tipoEnMano} + ${puntosDelResiduo} PTS`;
@@ -458,7 +536,9 @@ function generarNumeroTarjeta() {
 }
 
 function finalizarSesion() {
+    actualizarGuia("");
     ledTexto.innerText = "GENERANDO RESUMEN...";
+    audioGenerando.play().catch(e => console.log("Error al reproducir audio gereando"));
     btnListo.style.display = 'none';
 
     let puntosNuevos = 0;
@@ -506,7 +586,7 @@ function finalizarSesion() {
                     </div>
                 </div>
             `;
-        }, 50); 
+        }, 900); 
     }, 800);
 }
 
@@ -534,7 +614,7 @@ function mostrarRecompensas(puntosSesion) {
 
                 <hr style="width: 80%; border: 0; border-top: 1px solid #eee; margin: 5px 0;">
 
-                <button onclick="${tieneSuficiente ? "alert('¡Felicidades! Se ha abonado $5.00 MXN a tu tarjeta del METRO')" : "alert('Aún no tienes suficientes puntos')"}" 
+                <button onclick="${tieneSuficiente ? "canjearPremio('SALDO')" : "alert('Aún no tienes suficientes puntos')"}" 
                     class="${tieneSuficiente ? 'btn-premio-activo' : 'btn-premio-bloqueado'}"
                     style="width: 280px; padding: 10px; border-radius: 50px; font-weight: bold; border: none;">
                     SALDO A TARJETA ($5.00 MXN) 
@@ -543,10 +623,11 @@ function mostrarRecompensas(puntosSesion) {
 
                 <hr style="width: 80%; border: 0; border-top: 1px solid #eee; margin: 5px 0;">
 
-                <button onclick="${tieneSuficiente ? "alert('225-6965-2705-5825 - Código de Descuento del 5% en OXXO, 7-Eleven o Circle K')" : "alert('Aún no tienes suficientes puntos')"}" 
+                <button onclick="${tieneSuficiente ? "canjearPremio('QR')" : "alert('Aún no tienes suficientes puntos')"}" 
                     class="${tieneSuficiente ? 'btn-premio-activo' : 'btn-premio-bloqueado'}"
                     style="width: 280px; padding: 10px; border-radius: 50px; font-weight: bold; border: none;">
                     DESCUENTO 5% (OXXO / 7-E / C-K)
+                    ${!tieneSuficiente ? `<br><span style="font-size: 0.7rem;">Faltan ${500 - totalReal} pts</span>` : ""}  
                 </button>
             </div>
 
@@ -555,10 +636,16 @@ function mostrarRecompensas(puntosSesion) {
             </button>
         </div>
     `;
+    actualizarGuia("Selecciona alguna de las recompensas disponibles");
+    audioRecompensas.play().catch(e => console.log("Error al reproducir audio de recompensas"));
+
+    setTimeout(() => {
+        actualizarGuia(""); // Se borra el mensaje automáticamente
+    }, 3500);
 }
 
 function acumularPuntos(nuevosPuntos) {
-    
+    actualizarGuia("");
     // en el evento 'click' de la zonaDeposito.
     
     // El saldoHistorico ya es 487 (en tu ejemplo)
@@ -583,3 +670,79 @@ function acumularPuntos(nuevosPuntos) {
         </div>
     `;
 }
+
+
+function canjearPremio(tipo) {
+    actualizarGuia("");
+    const numTarjeta = generarNumeroTarjeta(); // Reutilizamos tu función de ID aleatorio
+    let contenidoFinal = "";
+
+    if (tipo === 'SALDO') {
+        contenidoFinal = `
+            <div style="animation: fadeIn 0.5s ease; text-align: center;">
+                <h1 style="color: #27ae60; font-size: 2.5rem; margin-bottom: 20px;">¡FELICIDADES!</h1>
+                <p style="font-size: 1.4rem; line-height: 1.6;">
+                    Se han abonado <strong style="color: #27ae60;">$5.00 MXN</strong><br>
+                    a tu tarjeta del sistema <br>
+                    <strong>MI (Movilidad Integrada)</strong>
+                </p>
+                <div style="background: #f1f1f1; padding: 10px; border-radius: 10px; margin: 20px 0; font-family: monospace; font-size: 1.1rem;">
+                    ID TARJETA: ${numTarjeta}
+                </div>
+                <button onclick="location.reload()" style="margin-top: 20px; padding: 15px 40px; background: #393a3b; color: white; border-radius: 50px; border: none; cursor: pointer; font-weight: bold;">
+                    FINALIZAR Y SALIR
+                </button>
+            </div>
+        `;
+    } else if (tipo === 'QR') {
+        contenidoFinal = `
+            <div style="animation: fadeIn 0.5s ease; text-align: center;">
+                <h1 style="color: #27ae60; font-size: 2rem;">CÓDIGO DE DESCUENTO</h1>
+                <p style="font-size: 1.2rem; margin-bottom: 10px;">Presenta este código en caja:</p>
+                
+                <div style="background: white; border: 3px dashed #27ae60; padding: 20px; margin: 20px 0; font-size: 1.8rem; font-weight: 800; letter-spacing: 5px; color: #333;">
+                    225-6965-2705
+                </div>
+
+                <p style="color: #666;">Válido por <strong>5% de descuento</strong> en<br>OXXO, 7-Eleven o Circle K</p>
+                
+                <button onclick="location.reload()" style="margin-top: 25px; padding: 15px 40px; background: #393a3b; color: white; border-radius: 50px; border: none; cursor: pointer; font-weight: bold;">
+                    VOLVER AL INICIO
+                </button>
+            </div>
+        `;
+    }
+
+    // Inyectamos el contenido en la pantalla que ya tienes
+    textoPantallaSistema.innerHTML = contenidoFinal;
+}
+
+
+
+// 2. Función infalible para móviles y web
+const liberarAudio = () => {
+    if (sonidoActivado) return;
+
+    // Forzamos la carga y reproducción inmediata
+    audioAcercate.load(); // Prepara el archivo
+    audioAcercate.play()
+        .then(() => {
+            sonidoActivado = true;
+            console.log("¡Audio liberado con éxito!");
+            
+            // Una vez que suena, quitamos todos los escuchadores de seguridad
+            document.removeEventListener('click', liberarAudio);
+            document.removeEventListener('touchstart', liberarAudio);
+            document.removeEventListener('mousedown', liberarAudio);
+        })
+        .catch(err => {
+            // Si el toque fue muy rápido (fantasma), el sistema avisará aquí
+            console.log("Sistema: Toca un poco más firme la pantalla para activar el audio");
+        });
+};
+
+// 3. Escuchamos cualquier interacción inicial
+document.addEventListener('touchstart', liberarAudio, { passive: true });
+document.addEventListener('click', liberarAudio);
+document.addEventListener('mousedown', liberarAudio);
+

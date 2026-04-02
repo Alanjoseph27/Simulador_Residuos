@@ -180,33 +180,7 @@ body, html {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.8; }
 }
-/*
-.calcomania-sensor {
-    position: absolute;
-    top: 24.3%;
-    left: 56.9%;
-    width: 33px;
-    height: auto;
-    opacity: 1;
-    pointer-events: none;
-    z-index: 5;
-    
-}*/
-/*
-.logo-maquina-top {
-    position: absolute;
-    top: 5.8%; 
-    left: 50%; 
-    transform: translateX(-50%);
-    
-    
-    width: 117px; 
-    height: auto;
-    
-    
-    z-index: 5;
-    pointer-events: none; 
-}*/
+
 
 #btn-listo {
     display: none;
@@ -480,14 +454,69 @@ contenedor-manos { position: absolute; bottom: -80px; right: 5%; width: 200px; h
     display: none;
 }
 
+#overlay-guia {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7); /* Aumentamos un poco la oscuridad */
+    z-index: 1500;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.8s ease, visibility 0.8s ease; /* Transición más lenta y suave */
+    pointer-events: none;
+}
+
+@keyframes parpadeo-simple {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+#guia-asistencia {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Centrado estático, sin movimiento */
+    color: white;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    font-size: 2.2rem;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    z-index: 2000;
+    pointer-events: none;
+    text-align: center;
+    width: 85%;
+    max-width: 800px;
+    
+    /* Estado base: Invisible */
+    opacity: 0;
+    transition: opacity 0.4s ease; /* Transición rápida para que no se sienta pesado */
+}
+
+/* Cuando el mensaje está activo, parpadea sin moverse */
+#guia-asistencia.visible {
+    animation: parpadeo-simple 1.5s infinite ease-in-out;
+}
+
+/* Clase para activar la opacidad del overlay */
+.overlay-activo {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
 
 /* --- AJUSTES PARA CELULAR --- */
 @media (max-width: 768px) {
     :root {
         /* Bajamos el zoom para que la máquina quepa en la pantalla del cel */
-        --zoom-actual: 1.8; 
+        --zoom-actual: 2.4; 
     }
     
+    #guia-asistencia {
+        font-size: 1.5rem; /* Un poco más pequeño en móvil */
+    }
+
     #btn-listo{
     display: none;
     transform: translateX(-50%);
