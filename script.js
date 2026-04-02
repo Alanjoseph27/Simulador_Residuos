@@ -103,9 +103,9 @@ function moverMovil(acercar) {
 const puntosResiduos = { 
     'PET': 20, 
     'VIDRIO': 15, 
-    'LATA': 10, 
-    'MANZANA': 5, 
-    'CARTON': 8,
+    'ALUMINIO': 10, 
+    'PLÁSTICO': 5, 
+    'CARTÓN': 8,
     'TARJETA': 0 
 };
 
@@ -113,9 +113,9 @@ const puntosResiduos = {
 const rutasSVG = {
     'PET': 'img/b_plastico.svg',
     'VIDRIO':'img/b_vidrio.svg',
-    'LATA': 'img/lata.svg',
-    'MANZANA': 'img/manzana.svg',
-    'CARTON': 'img/v_unicel.svg',
+    'ALUMINIO': 'img/lata.svg',
+    'PLÁSTICO': 'img/manzana.svg',
+    'CARTÓN': 'img/v_unicel.svg',
     'TARJETA': 'img/tarjeta.svg'
 };
 
@@ -298,7 +298,7 @@ window.addEventListener('wheel', (e) => {
     if (zoom < 1.3 || !tarjetaEscaneada || pantallaSistema.classList.contains('pantalla-activa')) return;
 
     // 2. CORRECCIÓN DE NOMBRES: 'UNICEL' debe coincidir con la clave en rutasSVG
-    const tipos = ['PET', 'VIDRIO', 'LATA', 'MANZANA', 'CARTON']; 
+    const tipos = ['PET', 'VIDRIO', 'ALUMINIO', 'PLÁSTICO', 'CARTÓN']; 
     const colores = ['transparent', 'transparent', 'transparent', 'transparent', 'transparent'];
 
     // 3. Lógica de dirección del scroll
